@@ -1,11 +1,10 @@
-FROM python:3.8-alpine
+FROM python:3.8-slim-buster
 COPY . /app
-RUN apk update && pip install -r /app/requirements.txt --no-cache-dir
+RUN apt-get update -y && apt-get upgrade -y
+RUN apt-get install gcc libpq-dev python3-dev nginx -y
+	
+RUN pip install -r /app/requirements.txt --no-cache-dir
 
-EXPOSE $PORT
+EXPOSE 8080
 
-RUN adduser -D espor
-USER espor
-
-CMD python /app/manage.py migrate
-CMD python /app/manage.py runserver 0:$PORT
+CMD /app/nginx/nginx-config.sh ; python /app/manage.py migrate ; gunicorn -b :8000 --chdir /app/ESPOR.wsgi
